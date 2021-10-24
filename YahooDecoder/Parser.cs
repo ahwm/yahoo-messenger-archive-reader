@@ -14,10 +14,16 @@ namespace YahooDecoder
 
         public class StandardColors
         {
-            //   BLACK(0, 0, 0);
-            //    BLUE(0, 0, 255), TEAL(0, 128, 128), SKY_BLUE_4(238, 243, 246), //EEF3F6
-            //GREEN(0, 128, 0), MAGENTA(255, 0, 128), PURPLE(128, 0, 128), ORANGE(255, 128, 0),
-            //RED(255, 0, 0), OLIVE(128, 128, 0);
+            public readonly static StandardColors BLACK = new StandardColors(0, 0, 0);
+            public readonly static StandardColors BLUE = new StandardColors(0, 0, 255);
+            public readonly static StandardColors TEAL = new StandardColors(0, 128, 128);
+            public readonly static StandardColors SKY_BLUE_4 = new StandardColors(238, 243, 246); //EEF3F6
+            public readonly static StandardColors GREEN = new StandardColors(0, 128, 0);
+            public readonly static StandardColors MAGENTA = new StandardColors(255, 0, 128);
+            public readonly static StandardColors PURPLE = new StandardColors(128, 0, 128);
+            public readonly static StandardColors ORANGE = new StandardColors(255, 128, 0);
+            public readonly static StandardColors RED = new StandardColors(255, 0, 0);
+            public readonly static StandardColors OLIVE = new StandardColors(128, 128, 0);
 
             private static Color color;
 
@@ -30,12 +36,31 @@ namespace YahooDecoder
             {
                 return color;
             }
+
+            public static StandardColors[] GetValues()
+            {
+                return new StandardColors[]
+                {
+                    BLACK,
+                    BLUE,
+                    TEAL,
+                    SKY_BLUE_4,
+                    GREEN,
+                    MAGENTA,
+                    PURPLE,
+                    ORANGE,
+                    RED,
+                    OLIVE
+
+                };
+            }
         }
 
-    public Parser(string buddyId, string myId, Stream inputStream)
+        public Parser(string buddyId, string myId, Stream inputStream)
         {
             Buddy = buddyId;
             MyID = myId;
+            Key = myId.ToCharArray();
             InputStream = inputStream;
         }
 
@@ -58,14 +83,14 @@ namespace YahooDecoder
             mis.Position = 0;
             int r;
             StringBuilder buff = new StringBuilder();
-            while ((r = mis.ReadByte()) != -1)
+            while ((r = mis.Read()) != -1)
             {
                 if (r == 0x1b)
                 {
-                    r = mis.ReadByte();
+                    r = mis.Read();
                     if (r != 0x5b)
                     {
-                        throw new FormatException($"Expected 0x5b, returned {r:x}");
+                        //throw new FormatException($"Expected 0x5b, returned {r:x}");
                     }
                     else
                     {
@@ -151,7 +176,7 @@ namespace YahooDecoder
 
         private Token ReadStandardColor(MessageStream mis)
         {
-            StandardColors[] standardColors = StandardColors.values();
+            StandardColors[] standardColors = StandardColors.GetValues();
             int r = mis.Read();
             int idx = r - '0';
             if (idx >= 0 && idx < standardColors.Length)
@@ -174,7 +199,7 @@ namespace YahooDecoder
             {
                 color = Color.FromArgb(r, g, b);
             }
-            catch (ArgumentException e)
+            catch (ArgumentException)
             {
                 //System.err.println("Bad color: [" + r + ", " + g + ", " + b + "]");
                 color = Color.Black;
